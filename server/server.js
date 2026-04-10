@@ -1,8 +1,4 @@
-process.env.GROQ_API_KEY = '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';
-process.env.MONGODB_URI = 'mongodb+srv://Dilnaz:123456diplom@cluster0.7b3gkwf.mongodb.net/dilnaz?retryWrites=true&w=majority';
-process.env.CLIENT_URL = 'http://localhost:5173';
-process.env.PORT = '5000';
-process.env.JWT_SECRET = 'mysupersecretkey12345abcdefghijklmnopqrstuvwxyz';
+
 import dotenv from 'dotenv';
 dotenv.config();
 import "dotenv/config";
