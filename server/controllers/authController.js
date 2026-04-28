@@ -2,6 +2,15 @@ import User from "../models/User.js";
 import jwt from "jsonwebtoken";
 import bcryptjs from "bcryptjs";
 
+const isProduction = process.env.NODE_ENV === 'production';
+
+const cookieOptions = {
+  httpOnly: true,
+  secure: isProduction,
+  sameSite: isProduction ? 'none' : 'lax',
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+};
+
 export const signup = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -18,13 +27,7 @@ export const signup = async (req, res) => {
       expiresIn: "7d",
     });
 
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: false,
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-
+    res.cookie("token", token, cookieOptions);
     res.json({ user: { _id: user._id, name: user.name, email: user.email } });
   } catch (err) {
     res.status(500).json({ message: "Signup failed" });
@@ -49,13 +52,7 @@ export const login = async (req, res) => {
       expiresIn: "7d",
     });
 
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: false,
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-
+    res.cookie("token", token, cookieOptions);
     res.json({ user: { _id: user._id, name: user.name, email: user.email } });
   } catch (err) {
     res.status(500).json({ message: "Login failed" });
@@ -64,12 +61,7 @@ export const login = async (req, res) => {
 
 export const logout = async (req, res) => {
   try {
-    res.clearCookie("token", {
-      httpOnly: true,
-      secure: false,
-      sameSite: "lax",
-    });
-
+    res.clearCookie("token", cookieOptions);
     res.json({ message: "Logged out successfully" });
   } catch (err) {
     res.status(500).json({ message: "Logout failed" });
