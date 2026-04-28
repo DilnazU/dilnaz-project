@@ -5,7 +5,10 @@ const AuthContext = createContext();
 
 const api = axios.create({ 
   baseURL: 'http://localhost:5000',
-  withCredentials: true
+  withCredentials: true,
+  headers: {
+    'Content-Type': 'application/json'
+  }
 });
 
 export function AuthProvider({ children }) {
@@ -16,8 +19,9 @@ export function AuthProvider({ children }) {
     const checkAuth = async () => {
       try {
         const { data } = await api.get('/auth/me');
-        setUser(data);
+        setUser(data.user);
       } catch (err) {
+        console.error('Auth check error:', err);
         setUser(null);
       } finally {
         setLoading(false);
@@ -27,20 +31,38 @@ export function AuthProvider({ children }) {
   }, []);
 
   const signup = async (name, email, password) => {
-    const { data } = await api.post('/auth/signup', { name, email, password });
-    setUser(data.user);
-    return data;
+    try {
+      const { data } = await api.post('/auth/signup', { name, email, password });
+      setUser(data.user);
+      return data;
+    } catch (err) {
+      console.error('Signup error:', err);
+      throw err;
+    }
   };
 
   const login = async (email, password) => {
-    const { data } = await api.post('/auth/login', { email, password });
-    setUser(data.user);
-    return data;
+    try {
+      const { data } = await api.post('/auth/login', { email, password });
+      setUser(data.user);
+      return data;
+    } catch (err) {
+      console.error('Login error:', err);
+      throw err;
+    }
   };
 
   const logout = async () => {
-    await api.post('/auth/logout');
-    setUser(null);
+    try {
+      await api.post('/auth/logout');
+    } catch (err) {
+      console.error('Logout error:', err);
+    } finally {
+      setUser(null);
+      localStorage.clear();
+      sessionStorage.clear();
+      window.location.href = '/';
+    }
   };
 
   return (

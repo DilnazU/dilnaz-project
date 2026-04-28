@@ -2,39 +2,50 @@ import { useEffect, useRef } from 'react';
 import MessageBubble from './MessageBubble';
 
 export default function ChatArea({ messages, loading }) {
-  const bottomRef = useRef(null);
+  const containerRef = useRef(null);
+  const isUserScrollingRef = useRef(false);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, loading]);
+    const container = containerRef.current;
+    if (!container) return;
 
-  if (messages.length === 0 && !loading) {
-    return null;
-  }
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      isUserScrollingRef.current = scrollHeight - scrollTop - clientHeight > 150;
+    };
+
+    container.addEventListener('scroll', handleScroll, { passive: true });
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    if (isUserScrollingRef.current) return;
+    const container = containerRef.current;
+    if (!container) return;
+    container.scrollTop = container.scrollHeight;
+  }, [messages]);
+
+  if (messages.length === 0 && !loading) return null;
 
   return (
-    <div className="flex-1 overflow-y-auto px-4 py-6">
+    <div ref={containerRef} className="flex-1 overflow-y-auto px-4 py-6" style={{ background: 'transparent' }}>
       <div className="max-w-3xl mx-auto space-y-6">
         {messages.map((msg, i) => (
           <MessageBubble key={i} message={msg} index={i} />
         ))}
 
         {loading && (
-          <div className="flex gap-3">
-            <div className="shrink-0 w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center p-1">
-              <img src="/msb-logo.png" alt="MSB" className="w-full h-full object-contain" />
-            </div>
-            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl rounded-bl-md px-4 py-3">
-              <div className="flex gap-1.5">
-                <div className="w-2 h-2 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                <div className="w-2 h-2 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                <div className="w-2 h-2 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+          <div className="flex justify-start">
+            <div className="px-4 py-3 rounded-2xl rounded-bl-md text-sm"
+              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <div className="flex gap-1.5 items-center">
+                <div className="w-2 h-2 rounded-full animate-bounce" style={{ background: '#00ff87', animationDelay: '0ms' }} />
+                <div className="w-2 h-2 rounded-full animate-bounce" style={{ background: '#00ff87', animationDelay: '150ms' }} />
+                <div className="w-2 h-2 rounded-full animate-bounce" style={{ background: '#0ea5e9', animationDelay: '300ms' }} />
               </div>
             </div>
           </div>
         )}
-
-        <div ref={bottomRef} />
       </div>
     </div>
   );
