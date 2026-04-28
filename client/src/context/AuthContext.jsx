@@ -3,12 +3,21 @@ import axios from 'axios';
 
 const AuthContext = createContext();
 
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 const api = axios.create({ 
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000',
+  baseURL: BASE_URL,
   withCredentials: true,
-  headers: {
-    'Content-Type': 'application/json'
+  headers: { 'Content-Type': 'application/json' }
+});
+
+// Автоматически добавляет токен в каждый запрос
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
+  return config;
 });
 
 export function AuthProvider({ children }) {
@@ -17,11 +26,16 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const checkAuth = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setLoading(false);
+        return;
+      }
       try {
         const { data } = await api.get('/auth/me');
         setUser(data.user);
       } catch (err) {
-        console.error('Auth check error:', err);
+        localStorage.removeItem('token');
         setUser(null);
       } finally {
         setLoading(false);
@@ -31,38 +45,23 @@ export function AuthProvider({ children }) {
   }, []);
 
   const signup = async (name, email, password) => {
-    try {
-      const { data } = await api.post('/auth/signup', { name, email, password });
-      setUser(data.user);
-      return data;
-    } catch (err) {
-      console.error('Signup error:', err);
-      throw err;
-    }
+    const { data } = await api.post('/auth/signup', { name, email, password });
+    localStorage.setItem('token', data.token);
+    setUser(data.user);
+    return data;
   };
 
   const login = async (email, password) => {
-    try {
-      const { data } = await api.post('/auth/login', { email, password });
-      setUser(data.user);
-      return data;
-    } catch (err) {
-      console.error('Login error:', err);
-      throw err;
-    }
+    const { data } = await api.post('/auth/login', { email, password });
+    localStorage.setItem('token', data.token);
+    setUser(data.user);
+    return data;
   };
 
   const logout = async () => {
-    try {
-      await api.post('/auth/logout');
-    } catch (err) {
-      console.error('Logout error:', err);
-    } finally {
-      setUser(null);
-      localStorage.clear();
-      sessionStorage.clear();
-      window.location.href = '/';
-    }
+    localStorage.removeItem('token');
+    setUser(null);
+    window.location.href = '/';
   };
 
   return (
@@ -72,10 +71,10 @@ export function AuthProvider({ children }) {
   );
 }
 
+export { api };
+
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within AuthProvider');
   return context;
 }

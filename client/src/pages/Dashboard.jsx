@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { getLanguage, subscribe } from '../context/LanguageStore';
 import translations from '../locales/translations';
 import Navbar from '../components/Navbar';
@@ -11,12 +10,8 @@ import CategorySelector from '../components/CategorySelector';
 import PromptTemplates from '../components/PromptTemplates';
 import OnboardingWizard from '../components/OnboardingWizard';
 import useOnboarding from '../hooks/useOnboarding';
+import { api } from '../context/AuthContext';
 import gsap from 'gsap';
-
-const api = axios.create({ 
-  baseURL: import.meta.env.VITE_API_URL || '',
-  withCredentials: true 
-});
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -99,9 +94,13 @@ export default function Dashboard() {
     const assistantIndex = messages.length + 1;
     setMessages((prev) => [...prev, { role: 'assistant', content: '' }]);
     try {
+      const token = localStorage.getItem('token');
       const response = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/chat`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` }),
+        },
         credentials: 'include',
         body: JSON.stringify({ message: text, chatId: activeChatId, category }),
       });
