@@ -52,7 +52,7 @@ export default function GuestChat() {
     setMessages((prev) => [...prev, { role: 'assistant', content: '' }]);
 
     try {
-      const response = await fetch('/api/chat/guest', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/chat/guest`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: text, history: messages, category }),
