@@ -181,7 +181,7 @@ export default function Landing() {
       <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4"
         style={{ background: 'rgba(2,8,23,0.85)', backdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(0,255,135,0.08)' }}>
 
-        <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => navigate('/landing')}>
+        <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => navigate('/')}>
           <svg width="24" height="28" viewBox="0 0 120 140" xmlns="http://www.w3.org/2000/svg">
             <defs><linearGradient id="lg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#00ff87"/><stop offset="100%" stopColor="#0ea5e9"/></linearGradient></defs>
             <polygon points="60,4 105,60 60,116 15,60" fill="none" stroke="url(#lg)" strokeWidth="3"/>
@@ -202,7 +202,6 @@ export default function Landing() {
         </div>
 
         <div className="hidden md:flex items-center gap-3">
-          {/* Language dropdown */}
           <div className="relative" onClick={e => e.stopPropagation()}>
             <button onClick={() => setLangDropdown(!langDropdown)}
               className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all hover:bg-white/5"
@@ -233,7 +232,7 @@ export default function Landing() {
             style={{ color: '#e2e8f0', border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.04)' }}>
             {t.nav.login}
           </button>
-          <button onClick={() => navigate('/')}
+          <button onClick={() => navigate('/guest')}
             className="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all hover:scale-105"
             style={{ background: 'linear-gradient(135deg,#00ff87,#0ea5e9)', color: '#020817', boxShadow: '0 0 20px rgba(0,255,135,0.25)' }}>
             {t.nav.start}
@@ -266,7 +265,7 @@ export default function Landing() {
               style={{ color: '#e2e8f0', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.03)' }}>
               {t.nav.login}
             </button>
-            <button onClick={() => { navigate('/'); setMobileMenu(false); }}
+            <button onClick={() => { navigate('/guest'); setMobileMenu(false); }}
               className="w-full py-2.5 rounded-xl text-sm font-semibold"
               style={{ background: 'linear-gradient(135deg,#00ff87,#0ea5e9)', color: '#020817' }}>
               {t.nav.start}
@@ -278,7 +277,6 @@ export default function Landing() {
       {/* HERO */}
       <section className="relative z-10 min-h-screen flex items-center justify-center px-4 pt-20">
         <div ref={heroRef} className="text-center max-w-4xl mx-auto">
-
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mb-10"
             style={{ background: 'rgba(0,255,135,0.08)', border: '1px solid rgba(0,255,135,0.2)', color: '#00ff87' }}>
             <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: '#00ff87' }} />
@@ -298,7 +296,7 @@ export default function Landing() {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
-            <button onClick={() => navigate('/')}
+            <button onClick={() => navigate('/guest')}
               className="flex items-center gap-2 px-8 py-4 rounded-2xl text-base font-bold transition-all hover:scale-105"
               style={{ background: 'linear-gradient(135deg,#00ff87,#0ea5e9)', color: '#020817', boxShadow: '0 0 40px rgba(0,255,135,0.3)' }}>
               {t.hero.cta}
@@ -468,7 +466,7 @@ export default function Landing() {
             <h2 className="text-4xl font-bold text-white mb-5 relative z-10">{t.cta.title}</h2>
             <p className="text-lg mb-10 relative z-10" style={{ color: 'rgba(148,163,184,0.6)' }}>{t.cta.subtitle}</p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 relative z-10">
-              <button onClick={() => navigate('/')}
+              <button onClick={() => navigate('/guest')}
                 className="flex items-center gap-2 px-8 py-4 rounded-2xl text-base font-bold transition-all hover:scale-105"
                 style={{ background: 'linear-gradient(135deg,#00ff87,#0ea5e9)', color: '#020817', boxShadow: '0 0 40px rgba(0,255,135,0.3)' }}>
                 {t.cta.btn}

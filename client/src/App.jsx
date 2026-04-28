@@ -21,8 +21,8 @@ export default function App() {
   return (
     <div className="h-screen" style={{ background: '#020817', color: '#f1f5f9' }}>
       <Routes>
-        <Route path="/landing" element={<Landing />} />
-        <Route path="/" element={<GuestChat />} />
+        <Route path="/" element={<Landing />} />
+        <Route path="/guest" element={<GuestChat />} />
         <Route path="/login" element={<Login />} />
         <Route path="/chat" element={<Dashboard />} />
         <Route path="/analysis" element={<AnalysisPage />} />
