@@ -13,7 +13,10 @@ import OnboardingWizard from '../components/OnboardingWizard';
 import useOnboarding from '../hooks/useOnboarding';
 import gsap from 'gsap';
 
-const api = axios.create({ withCredentials: true });
+const api = axios.create({ 
+  baseURL: import.meta.env.VITE_API_URL || '',
+  withCredentials: true 
+});
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -45,7 +48,7 @@ export default function Dashboard() {
   const fetchChats = useCallback(async () => {
     try {
       const { data } = await api.get('/api/chat');
-      setChats(data);
+      setChats(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Failed to fetch chats:', err);
     }
@@ -96,7 +99,7 @@ export default function Dashboard() {
     const assistantIndex = messages.length + 1;
     setMessages((prev) => [...prev, { role: 'assistant', content: '' }]);
     try {
-      const response = await fetch('/api/chat', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
