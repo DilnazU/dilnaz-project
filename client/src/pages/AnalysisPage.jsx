@@ -198,7 +198,7 @@ export default function AnalysisPage() {
       fd.append('problem', formData.problem);
       fd.append('goal', formData.goal);
       fd.append('file', file);
-      const { data } = await axios.post('http://localhost:5000/api/analysis', fd, {
+      const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/api/analysis`, fd, {
         headers: { 'Content-Type': 'multipart/form-data' },
         withCredentials: true
       });
