@@ -15,12 +15,10 @@ import auth from './middleware/auth.js';
 
 const app = express();
 
-// Безопасность — helmet закрывает XSS, clickjacking и др.
 app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' },
 }));
 
-// Rate limiting — максимум 100 запросов за 15 минут с одного IP
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
@@ -30,31 +28,39 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// Строгий лимит для анализа — 10 запросов за 15 минут
 const analysisLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
   message: { error: 'Превышен лимит анализа. Попробуйте через 15 минут.' },
 });
 
-// CORS
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://dilnaz-project.vercel.app',
+  process.env.CLIENT_URL,
+].filter(Boolean);
+
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
 }));
 
 app.use(express.json());
 app.use(cookieParser());
 
-// MongoDB
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('MongoDB connected:', process.env.MONGODB_URI.split('@')[1]))
   .catch(err => console.error('MongoDB error:', err.message));
 
-// Routes
 app.use('/auth', authRoutes);
-app.use('/api/chat', auth, chatRoutes);
-app.use('/api/analysis', auth, analysisLimiter, analysisRoutes);
+app.use('/api/chat', chatRoutes);
+app.use('/api/analysis', analysisLimiter, analysisRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
