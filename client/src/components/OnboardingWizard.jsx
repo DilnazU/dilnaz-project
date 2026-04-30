@@ -243,15 +243,3 @@ export default function OnboardingWizard({ language, onComplete }) {
   );
 }
 
-export function useOnboarding() {
-  const [show, setShow] = useState(false);
-
-  useEffect(() => {
-    const done = localStorage.getItem(STORAGE_KEY);
-    if (!done) setShow(true);
-  }, []);
-
-  const complete = () => setShow(false);
-
-  return { show, complete };
-}
