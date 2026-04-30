@@ -7,6 +7,7 @@ import PromptTemplates from '../components/PromptTemplates';
 import { LogIn, UserPlus, X, MessageSquare, Save } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import gsap from 'gsap';
+import ThemeToggle from '../components/ThemeToggle';
 
 export default function GuestChat() {
   const navigate = useNavigate();
