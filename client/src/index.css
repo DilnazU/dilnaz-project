@@ -1,115 +1,28 @@
-@import "tailwindcss";
-
-@custom-variant dark (&:where(.dark, .dark *));
-
-@theme {
-  --font-sans: 'Inter', sans-serif;
-  --color-primary: #00ff87;
-  --color-primary-dark: #0ea5e9;
-}
-
-@layer base {
-  body {
-    font-family: 'Inter', sans-serif;
-    margin: 0;
-    transition: background-color 0.3s ease, color 0.3s ease;
-  }
-  html.dark body {
-    background-color: #020817;
-    color: #f1f5f9;
-  }
-  html.light body {
-    background-color: #f0f4f8;
-    color: #0f172a;
-  }
-}
-
-html.dark {
-  --bg-primary: #020817;
-  --bg-secondary: #020f1a;
-  --bg-card: rgba(255,255,255,0.03);
-  --border-color: rgba(0,255,135,0.12);
-  --text-primary: #f1f5f9;
-  --text-secondary: rgba(148,163,184,0.7);
-  --text-muted: rgba(148,163,184,0.4);
-  --accent: #00ff87;
-  --accent-blue: #0ea5e9;
-  --scrollbar-thumb: rgba(0,255,135,0.2);
-  --scrollbar-thumb-hover: rgba(0,255,135,0.4);
-  --grid-color: rgba(0,255,135,0.03);
-}
-
-html.light {
-  --bg-primary: #f0f4f8;
-  --bg-secondary: #e2e8f0;
-  --bg-card: rgba(255,255,255,0.8);
-  --border-color: rgba(0,180,100,0.2);
-  --text-primary: #0f172a;
-  --text-secondary: rgba(51,65,85,0.8);
-  --text-muted: rgba(100,116,139,0.7);
-  --accent: #059669;
-  --accent-blue: #0284c7;
-  --scrollbar-thumb: rgba(5,150,105,0.3);
-  --scrollbar-thumb-hover: rgba(5,150,105,0.5);
-  --grid-color: rgba(5,150,105,0.04);
-}
-
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover); }
-
-@keyframes fade-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-@keyframes glow-pulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.8; }
-}
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-6px); }
-}
-@keyframes twinkle {
-  0%, 100% { opacity: 0.15; transform: scale(1); }
-  50% { opacity: 0.9; transform: scale(1.8); }
-}
-@keyframes blobMove {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(20px, -15px) scale(1.05); }
-  66% { transform: translate(-15px, 20px) scale(0.95); }
-}
-@keyframes gridPulse {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 0.6; }
-}
-
-.animate-fade-in { animation: fade-in 0.3s ease-out; }
-.animate-glow { animation: glow-pulse 3s ease-in-out infinite; }
-.animate-float { animation: float 4s ease-in-out infinite; }
-.animate-twinkle { animation: twinkle 3s ease-in-out infinite; }
-.animate-blob { animation: blobMove 12s ease-in-out infinite; }
-
-.gradient-text {
-  background: linear-gradient(135deg, var(--accent), var(--accent-blue));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.glass {
-  background: var(--bg-card);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--border-color);
-}
-
-.glow-green { box-shadow: 0 0 20px rgba(0, 255, 135, 0.25); }
-.glow-blue { box-shadow: 0 0 20px rgba(14, 165, 233, 0.25); }
-
-.bg-grid {
-  background-image:
-    linear-gradient(var(--grid-color) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
-  background-size: 60px 60px;
-}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/msb-logo.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <title>MSB Help - AI Assistant for SMBs</title>
+    <script>
+      // Apply theme before render to prevent flash
+      (function () {
+        var saved = localStorage.getItem('theme');
+        // Default is DARK — only switch to light if user explicitly chose it
+        if (saved === 'light') {
+          document.documentElement.classList.remove('dark');
+        } else {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
