@@ -220,10 +220,10 @@ export default function Landing() {
 
         <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => navigate('/')}>
           <svg width="24" height="28" viewBox="0 0 120 140" xmlns="http://www.w3.org/2000/svg">
-            <defs><linearGradient id="lg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor={accent}/><stop offset="100%" stopColor={accentBlue}/></linearGradient></defs>
-            <polygon points="60,4 105,60 60,116 15,60" fill="none" stroke="url(#lg)" strokeWidth="3"/>
-            <polygon points="60,24 88,60 60,96 32,60" fill="url(#lg)" fillOpacity="0.12"/>
-            <polygon points="60,24 88,60 60,96 32,60" fill="none" stroke="url(#lg)" strokeWidth="1.5"/>
+            <defs><linearGradient id="lg-nav" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor={accent}/><stop offset="100%" stopColor={accentBlue}/></linearGradient></defs>
+            <polygon points="60,4 105,60 60,116 15,60" fill="none" stroke="url(#lg-nav)" strokeWidth="3"/>
+            <polygon points="60,24 88,60 60,96 32,60" fill="url(#lg-nav)" fillOpacity="0.12"/>
+            <polygon points="60,24 88,60 60,96 32,60" fill="none" stroke="url(#lg-nav)" strokeWidth="1.5"/>
             <circle cx="60" cy="4" r="4" fill={accent}/>
             <circle cx="105" cy="60" r="4" fill={accent}/>
             <circle cx="60" cy="116" r="4" fill={accentBlue}/>
@@ -527,9 +527,9 @@ export default function Landing() {
       <footer className="relative z-10 py-8 px-4 text-center" style={{ borderTop: `1px solid ${footerBorder}` }}>
         <div className="flex items-center justify-center gap-2 mb-3">
           <svg width="18" height="22" viewBox="0 0 120 140" xmlns="http://www.w3.org/2000/svg">
-            <defs><linearGradient id="flg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor={accent}/><stop offset="100%" stopColor={accentBlue}/></linearGradient></defs>
-            <polygon points="60,4 105,60 60,116 15,60" fill="none" stroke="url(#flg)" strokeWidth="3"/>
-            <polygon points="60,24 88,60 60,96 32,60" fill="url(#flg)" fillOpacity="0.12"/>
+            <defs><linearGradient id="flg-footer" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor={accent}/><stop offset="100%" stopColor={accentBlue}/></linearGradient></defs>
+            <polygon points="60,4 105,60 60,116 15,60" fill="none" stroke="url(#flg-footer)" strokeWidth="3"/>
+            <polygon points="60,24 88,60 60,96 32,60" fill="url(#flg-footer)" fillOpacity="0.12"/>
             <circle cx="60" cy="4" r="4" fill={accent}/>
             <circle cx="105" cy="60" r="4" fill={accent}/>
             <circle cx="60" cy="116" r="4" fill={accentBlue}/>
