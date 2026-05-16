@@ -4,10 +4,10 @@ import ChatArea from '../components/ChatArea';
 import ChatInput from '../components/ChatInput';
 import CategorySelector from '../components/CategorySelector';
 import PromptTemplates from '../components/PromptTemplates';
+import ThemeToggle from '../components/ThemeToggle';
 import { LogIn, UserPlus, X, MessageSquare, Save } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import gsap from 'gsap';
-import ThemeToggle from '../components/ThemeToggle';
 
 export default function GuestChat() {
   const navigate = useNavigate();
@@ -151,24 +151,25 @@ export default function GuestChat() {
         style={{ opacity: 0, background: headerBg, backdropFilter: 'blur(16px)', borderBottom: `1px solid ${headerBorder}` }}>
         <div className="flex items-center gap-2.5">
           <svg width="28" height="32" viewBox="0 0 120 140" xmlns="http://www.w3.org/2000/svg">
-            <defs><linearGradient id="ng1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor={accent}/><stop offset="100%" stopColor={accentBlue}/></linearGradient></defs>
-            <polygon points="60,4 105,60 60,116 15,60" fill="none" stroke="url(#ng1)" strokeWidth="2.5"/>
-            <polygon points="60,24 88,60 60,96 32,60" fill="url(#ng1)" fillOpacity="0.1"/>
-            <polygon points="60,24 88,60 60,96 32,60" fill="none" stroke="url(#ng1)" strokeWidth="1.2"/>
+            <defs><linearGradient id="ng1-guest" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor={accent}/><stop offset="100%" stopColor={accentBlue}/></linearGradient></defs>
+            <polygon points="60,4 105,60 60,116 15,60" fill="none" stroke="url(#ng1-guest)" strokeWidth="2.5"/>
+            <polygon points="60,24 88,60 60,96 32,60" fill="url(#ng1-guest)" fillOpacity="0.1"/>
+            <polygon points="60,24 88,60 60,96 32,60" fill="none" stroke="url(#ng1-guest)" strokeWidth="1.2"/>
             <line x1="60" y1="4" x2="60" y2="24" stroke={accent} strokeWidth="2"/>
             <line x1="105" y1="60" x2="88" y2="60" stroke={accent} strokeWidth="2"/>
             <line x1="60" y1="116" x2="60" y2="96" stroke={accentBlue} strokeWidth="2"/>
             <line x1="15" y1="60" x2="32" y2="60" stroke={accentBlue} strokeWidth="2"/>
             <circle cx="60" cy="4" r="4" fill={accent}/><circle cx="105" cy="60" r="4" fill={accent}/>
             <circle cx="60" cy="116" r="4" fill={accentBlue}/><circle cx="15" cy="60" r="4" fill={accentBlue}/>
-            <line x1="32" y1="60" x2="60" y2="24" stroke="url(#ng1)" strokeWidth="0.8" opacity="0.35"/>
-            <line x1="88" y1="60" x2="60" y2="24" stroke="url(#ng1)" strokeWidth="0.8" opacity="0.35"/>
-            <line x1="32" y1="60" x2="60" y2="96" stroke="url(#ng1)" strokeWidth="0.8" opacity="0.35"/>
-            <line x1="88" y1="60" x2="60" y2="96" stroke="url(#ng1)" strokeWidth="0.8" opacity="0.35"/>
+            <line x1="32" y1="60" x2="60" y2="24" stroke="url(#ng1-guest)" strokeWidth="0.8" opacity="0.35"/>
+            <line x1="88" y1="60" x2="60" y2="24" stroke="url(#ng1-guest)" strokeWidth="0.8" opacity="0.35"/>
+            <line x1="32" y1="60" x2="60" y2="96" stroke="url(#ng1-guest)" strokeWidth="0.8" opacity="0.35"/>
+            <line x1="88" y1="60" x2="60" y2="96" stroke="url(#ng1-guest)" strokeWidth="0.8" opacity="0.35"/>
           </svg>
           <span className="text-base font-bold" style={{ background: `linear-gradient(135deg, ${accent}, ${accentBlue})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>MSB Help</span>
         </div>
         <div className="flex items-center gap-2">
+          <ThemeToggle />
           <button onClick={() => navigate('/login')}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all hover:scale-105"
             style={{ color: accent, border: `1px solid ${accent}33`, background: dark ? 'transparent' : 'rgba(255,255,255,0.6)' }}>
@@ -211,20 +212,20 @@ export default function GuestChat() {
             <div className="text-center">
               <div className="mx-auto mb-5 w-24 h-28 flex items-center justify-center" style={{ filter: `drop-shadow(0 0 20px ${accent}4d)` }}>
                 <svg width="96" height="112" viewBox="0 0 120 140" xmlns="http://www.w3.org/2000/svg">
-                  <defs><linearGradient id="wg1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor={accent}/><stop offset="100%" stopColor={accentBlue}/></linearGradient></defs>
-                  <polygon points="60,4 105,60 60,116 15,60" fill="none" stroke="url(#wg1)" strokeWidth="2.5"/>
-                  <polygon points="60,24 88,60 60,96 32,60" fill="url(#wg1)" fillOpacity="0.1"/>
-                  <polygon points="60,24 88,60 60,96 32,60" fill="none" stroke="url(#wg1)" strokeWidth="1.2"/>
+                  <defs><linearGradient id="wg1-guest" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor={accent}/><stop offset="100%" stopColor={accentBlue}/></linearGradient></defs>
+                  <polygon points="60,4 105,60 60,116 15,60" fill="none" stroke="url(#wg1-guest)" strokeWidth="2.5"/>
+                  <polygon points="60,24 88,60 60,96 32,60" fill="url(#wg1-guest)" fillOpacity="0.1"/>
+                  <polygon points="60,24 88,60 60,96 32,60" fill="none" stroke="url(#wg1-guest)" strokeWidth="1.2"/>
                   <line x1="60" y1="4" x2="60" y2="24" stroke={accent} strokeWidth="2"/>
                   <line x1="105" y1="60" x2="88" y2="60" stroke={accent} strokeWidth="2"/>
                   <line x1="60" y1="116" x2="60" y2="96" stroke={accentBlue} strokeWidth="2"/>
                   <line x1="15" y1="60" x2="32" y2="60" stroke={accentBlue} strokeWidth="2"/>
                   <circle cx="60" cy="4" r="4.5" fill={accent}/><circle cx="105" cy="60" r="4.5" fill={accent}/>
                   <circle cx="60" cy="116" r="4.5" fill={accentBlue}/><circle cx="15" cy="60" r="4.5" fill={accentBlue}/>
-                  <line x1="32" y1="60" x2="60" y2="24" stroke="url(#wg1)" strokeWidth="0.8" opacity="0.35"/>
-                  <line x1="88" y1="60" x2="60" y2="24" stroke="url(#wg1)" strokeWidth="0.8" opacity="0.35"/>
-                  <line x1="32" y1="60" x2="60" y2="96" stroke="url(#wg1)" strokeWidth="0.8" opacity="0.35"/>
-                  <line x1="88" y1="60" x2="60" y2="96" stroke="url(#wg1)" strokeWidth="0.8" opacity="0.35"/>
+                  <line x1="32" y1="60" x2="60" y2="24" stroke="url(#wg1-guest)" strokeWidth="0.8" opacity="0.35"/>
+                  <line x1="88" y1="60" x2="60" y2="24" stroke="url(#wg1-guest)" strokeWidth="0.8" opacity="0.35"/>
+                  <line x1="32" y1="60" x2="60" y2="96" stroke="url(#wg1-guest)" strokeWidth="0.8" opacity="0.35"/>
+                  <line x1="88" y1="60" x2="60" y2="96" stroke="url(#wg1-guest)" strokeWidth="0.8" opacity="0.35"/>
                   <text x="60" y="134" textAnchor="middle" fontSize="13" fontWeight="bold" fontFamily="Arial" fill={logoTextColor} letterSpacing="2">MSB HELP</text>
                 </svg>
               </div>
