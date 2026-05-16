@@ -11,11 +11,10 @@ import rateLimit from 'express-rate-limit';
 import authRoutes from './routes/auth.js';
 import chatRoutes from './routes/chat.js';
 import analysisRoutes from './routes/analysis.js';
-import auth from './middleware/auth.js';
 
 const app = express();
 
-app.set('trust proxy', 1); // fix для Railway proxy
+app.set('trust proxy', 1);
 
 app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' },
@@ -61,7 +60,7 @@ mongoose.connect(process.env.MONGODB_URI)
   .catch(err => console.error('MongoDB error:', err.message));
 
 app.use('/auth', authRoutes);
-app.use('/api/chat', auth, chatRoutes);
+app.use('/api/chat', chatRoutes);
 app.use('/api/analysis', analysisLimiter, analysisRoutes);
 
 const PORT = process.env.PORT || 5000;
