@@ -169,19 +169,25 @@ export default function Landing() {
   const ctaSectionBorder = dark ? 'rgba(0,255,135,0.15)' : 'rgba(5,150,105,0.2)';
 
   useEffect(() => {
-    if (heroRef.current) {
-      const els = heroRef.current.children;
-      try {
-        gsap.fromTo(els, { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, stagger: 0.15, ease: 'power3.out' });
-      } catch (e) {
-        // Если gsap не сработал — показываем текст без анимации,
-        // чтобы заголовок не остался невидимым (opacity: 0).
-        Array.from(els).forEach((el) => {
-          el.style.opacity = 1;
-          el.style.transform = 'none';
-        });
-      }
+    if (!heroRef.current) return;
+    const els = Array.from(heroRef.current.children);
+    // Гарантия: текст всегда видимый, даже если анимация не отработает.
+    const showAll = () => els.forEach((el) => {
+      el.style.opacity = 1;
+      el.style.transform = 'none';
+    });
+    try {
+      gsap.fromTo(
+        els,
+        { y: 40, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.6, stagger: 0.15, ease: 'power3.out', onComplete: showAll }
+      );
+    } catch (e) {
+      showAll();
     }
+    // Подстраховка: через 1.5 сек точно показать всё.
+    const timer = setTimeout(showAll, 1500);
+    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
