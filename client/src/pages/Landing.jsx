@@ -171,7 +171,16 @@ export default function Landing() {
   useEffect(() => {
     if (heroRef.current) {
       const els = heroRef.current.children;
-      gsap.fromTo(els, { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, stagger: 0.15, ease: 'power3.out' });
+      try {
+        gsap.fromTo(els, { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, stagger: 0.15, ease: 'power3.out' });
+      } catch (e) {
+        // Если gsap не сработал — показываем текст без анимации,
+        // чтобы заголовок не остался невидимым (opacity: 0).
+        Array.from(els).forEach((el) => {
+          el.style.opacity = 1;
+          el.style.transform = 'none';
+        });
+      }
     }
   }, []);
 
@@ -229,7 +238,7 @@ export default function Landing() {
             <circle cx="60" cy="116" r="4" fill={accentBlue}/>
             <circle cx="15" cy="60" r="4" fill={accentBlue}/>
           </svg>
-          <span className="font-bold text-base" style={{ background: `linear-gradient(135deg,${accent},${accentBlue})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>MSB Help</span>
+          <span className="font-bold text-base" style={{ background: `linear-gradient(135deg,${accent},${accentBlue})`, WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent', color: 'transparent' }}>MSB Help</span>
         </div>
 
         <div className="hidden md:flex items-center gap-6">
@@ -325,7 +334,14 @@ export default function Landing() {
           </div>
 
           <h1 className="text-5xl md:text-7xl font-bold mb-8 leading-tight tracking-tight">
-            <span style={{ background: `linear-gradient(135deg,${accent},${accentBlue})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            <span style={{
+              display: 'inline-block',
+              background: `linear-gradient(135deg,${accent},${accentBlue})`,
+              WebkitBackgroundClip: 'text',
+              backgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              color: 'transparent',
+            }}>
               {t.hero.title1}
             </span>
             <br />
@@ -398,7 +414,7 @@ export default function Landing() {
       <section id="features" className="relative z-10 py-28 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-5" style={{ background: `linear-gradient(135deg,${accent},${accentBlue})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            <h2 className="text-4xl font-bold mb-5" style={{ background: `linear-gradient(135deg,${accent},${accentBlue})`, WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent', color: 'transparent' }}>
               {t.features.title}
             </h2>
             <p className="text-lg" style={{ color: textMuted }}>{t.features.subtitle}</p>
@@ -535,7 +551,7 @@ export default function Landing() {
             <circle cx="60" cy="116" r="4" fill={accentBlue}/>
             <circle cx="15" cy="60" r="4" fill={accentBlue}/>
           </svg>
-          <span className="font-bold text-sm" style={{ background: `linear-gradient(135deg,${accent},${accentBlue})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>MSB Help</span>
+          <span className="font-bold text-sm" style={{ background: `linear-gradient(135deg,${accent},${accentBlue})`, WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent', color: 'transparent' }}>MSB Help</span>
         </div>
         <p className="text-xs" style={{ color: textFaint }}>© 2026 MSB Help. AI-ассистент для малого и среднего бизнеса.</p>
       </footer>
