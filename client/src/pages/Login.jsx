@@ -224,6 +224,12 @@ export default function Login() {
               />
             </div>
 
+            {isSignup && (
+              <p className="text-xs -mt-2 px-1" style={{ color: iconColor }}>
+                Минимум 6 символов, хотя бы одна буква и одна цифра
+              </p>
+            )}
+
             <button
               type="submit"
               disabled={submitting}
