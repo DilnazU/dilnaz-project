@@ -69,11 +69,7 @@ export default function Sidebar({ chats, activeChatId, onSelectChat, onNewChat, 
               <circle cx="60" cy="116" r="4" fill={accentBlue}/>
               <circle cx="15" cy="60" r="4" fill={accentBlue}/>
             </svg>
-            <span className="text-sm font-bold" style={{
-              background: `linear-gradient(135deg, ${accent}, ${accentBlue})`,
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent'
-            }}>MSB Help</span>
+            <span className="text-sm font-bold gradient-text">MSB Help</span>
           </div>
           <div className="flex items-center gap-1">
             <button onClick={onNewChat} className="p-2 rounded-lg transition-all hover:scale-105"

@@ -321,7 +321,7 @@ export default function AnalysisPage() {
               <circle cx="60" cy="4" r="4" fill={accent}/><circle cx="105" cy="60" r="4" fill={accent}/>
               <circle cx="60" cy="116" r="4" fill={accentBlue}/><circle cx="15" cy="60" r="4" fill={accentBlue}/>
             </svg>
-            <span className="font-bold text-sm hidden sm:inline" style={{ background: `linear-gradient(135deg,${accent},${accentBlue})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>MSB Help</span>
+            <span className="font-bold text-sm hidden sm:inline gradient-text">MSB Help</span>
           </div>
         </div>
 

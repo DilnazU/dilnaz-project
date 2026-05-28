@@ -272,7 +272,7 @@ export default function BusinessAnalysis({ isOpen, onClose, language }) {
             </div>
             <div>
               <h2 className="text-xl font-bold tracking-tight"
-                style={{ background: 'linear-gradient(135deg, #ffffff, #10b981)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                className="gradient-text">
                 {t.title}
               </h2>
               <p className="text-xs mt-0.5" style={{ color: 'rgba(16, 185, 129, 0.6)' }}>

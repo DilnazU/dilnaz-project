@@ -232,11 +232,7 @@ export default function Dashboard() {
                 </svg>
               </div>
 
-              <h2 className="text-3xl font-bold mb-2" style={{
-                background: `linear-gradient(135deg, ${accent}, ${accentBlue})`,
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-              }}>
+              <h2 className="text-3xl font-bold mb-2 gradient-text">
                 {t.dashboard.welcome}
               </h2>
               <p className="text-sm max-w-sm mx-auto" style={{ color: subtitleColor }}>

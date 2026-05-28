@@ -166,7 +166,7 @@ export default function GuestChat() {
             <line x1="32" y1="60" x2="60" y2="96" stroke="url(#ng1-guest)" strokeWidth="0.8" opacity="0.35"/>
             <line x1="88" y1="60" x2="60" y2="96" stroke="url(#ng1-guest)" strokeWidth="0.8" opacity="0.35"/>
           </svg>
-          <span className="text-base font-bold" style={{ background: `linear-gradient(135deg, ${accent}, ${accentBlue})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>MSB Help</span>
+          <span className="text-base font-bold gradient-text">MSB Help</span>
         </div>
         <div className="flex items-center gap-2">
           <ThemeToggle />
@@ -229,7 +229,7 @@ export default function GuestChat() {
                   <text x="60" y="134" textAnchor="middle" fontSize="13" fontWeight="bold" fontFamily="Arial" fill={logoTextColor} letterSpacing="2">MSB HELP</text>
                 </svg>
               </div>
-              <h2 className="text-3xl font-bold mb-2" style={{ background: `linear-gradient(135deg, ${accent}, ${accentBlue})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+              <h2 className="text-3xl font-bold mb-2 gradient-text">
                 Добро пожаловать
               </h2>
               <p className="text-sm max-w-sm mx-auto mb-1" style={{ color: subtitleColor }}>
