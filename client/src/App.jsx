@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard';
 import Landing from './pages/Landing';
 import AnalysisPage from './pages/AnalysisPage';
 import Profile from './pages/Profile';
+import ProtectedRoute from './components/ProtectedRoute';
 
 export default function App() {
   const { loading } = useAuth();
@@ -25,9 +26,9 @@ export default function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/guest" element={<GuestChat />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/chat" element={<Dashboard />} />
-        <Route path="/analysis" element={<AnalysisPage />} />
-        <Route path="/profile" element={<Profile />} />
+        <Route path="/chat" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/analysis" element={<ProtectedRoute><AnalysisPage /></ProtectedRoute>} />
+        <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </div>
