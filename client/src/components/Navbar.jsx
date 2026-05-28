@@ -3,11 +3,13 @@ import { LogOut, Menu } from 'lucide-react';
 import { getLanguage, setLanguage as updateLanguage, subscribe } from '../context/LanguageStore';
 import translations from '../locales/translations';
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import ThemeToggle from './ThemeToggle';
 import { useTheme } from '../context/ThemeContext';
 
 export default function Navbar({ onToggleSidebar }) {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const { dark } = useTheme();
   const [language, setLanguage] = useState(getLanguage());
 
@@ -76,14 +78,17 @@ export default function Navbar({ onToggleSidebar }) {
         {/* User */}
         {user ? (
           <div className="flex items-center gap-2">
-            <div className="px-3 py-1.5 rounded-lg text-sm font-medium"
+            <button
+              onClick={() => navigate('/profile')}
+              title="Мой профиль"
+              className="px-3 py-1.5 rounded-lg text-sm font-medium transition-all hover:opacity-80 cursor-pointer"
               style={{
                 background: dark ? 'rgba(0,255,135,0.06)' : 'rgba(5,150,105,0.08)',
                 border: dark ? '1px solid rgba(0,255,135,0.12)' : '1px solid rgba(5,150,105,0.15)',
                 color: dark ? 'rgba(0,255,135,0.8)' : '#059669',
               }}>
               {user.name}
-            </div>
+            </button>
             <button onClick={logout} className="p-2 rounded-lg transition-all hover:bg-red-500/10"
               style={{ color: 'rgba(248,113,113,0.6)' }} title="Logout">
               <LogOut size={17} />
