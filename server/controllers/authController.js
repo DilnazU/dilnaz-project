@@ -1,4 +1,5 @@
 import User from "../models/User.js";
+import Chat from "../models/Chat.js";
 import jwt from "jsonwebtoken";
 
 // ---------- Вспомогательные функции валидации ----------
@@ -103,4 +104,56 @@ export const getCurrentUser = async (req, res) => {
   // req.user уже заполнен в middleware auth.js — лишний запрос к базе не нужен.
   const { _id, name, email } = req.user;
   res.json({ user: { _id, name, email } });
+};
+
+// ---------- Смена пароля ----------
+export const changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ message: "Заполните оба поля" });
+    }
+    if (typeof newPassword !== "string" || newPassword.length < 6) {
+      return res.status(400).json({ message: "Новый пароль должен содержать минимум 6 символов" });
+    }
+    if (!/[a-zA-Zа-яА-Я]/.test(newPassword) || !/[0-9]/.test(newPassword)) {
+      return res.status(400).json({ message: "Новый пароль должен содержать хотя бы одну букву и одну цифру" });
+    }
+
+    // req.user не содержит пароль (он исключён в middleware), поэтому ищем заново
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: "Пользователь не найден" });
+    }
+
+    const isValid = await user.comparePassword(currentPassword);
+    if (!isValid) {
+      return res.status(401).json({ message: "Текущий пароль неверный" });
+    }
+
+    user.password = newPassword; // хешируется автоматически в модели (pre-save)
+    await user.save();
+
+    res.json({ message: "Пароль успешно изменён" });
+  } catch (err) {
+    console.error("Change password error:", err);
+    res.status(500).json({ message: "Не удалось изменить пароль" });
+  }
+};
+
+// ---------- Удаление аккаунта ----------
+export const deleteAccount = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    // Удаляем все чаты пользователя, потом самого пользователя
+    await Chat.deleteMany({ userId });
+    await User.findByIdAndDelete(userId);
+
+    res.json({ message: "Аккаунт удалён" });
+  } catch (err) {
+    console.error("Delete account error:", err);
+    res.status(500).json({ message: "Не удалось удалить аккаунт" });
+  }
 };

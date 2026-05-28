@@ -58,6 +58,18 @@ export function AuthProvider({ children }) {
     return data;
   };
 
+  const changePassword = async (currentPassword, newPassword) => {
+    const { data } = await api.put('/auth/password', { currentPassword, newPassword });
+    return data;
+  };
+
+  const deleteAccount = async () => {
+    await api.delete('/auth/account');
+    localStorage.removeItem('token');
+    setUser(null);
+    window.location.href = '/';
+  };
+
   const logout = async () => {
     localStorage.removeItem('token');
     setUser(null);
@@ -65,7 +77,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signup, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, signup, login, logout, changePassword, deleteAccount }}>
       {children}
     </AuthContext.Provider>
   );

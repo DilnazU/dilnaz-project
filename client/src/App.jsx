@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Landing from './pages/Landing';
 import AnalysisPage from './pages/AnalysisPage';
+import Profile from './pages/Profile';
 
 export default function App() {
   const { loading } = useAuth();
@@ -26,6 +27,7 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/chat" element={<Dashboard />} />
         <Route path="/analysis" element={<AnalysisPage />} />
+        <Route path="/profile" element={<Profile />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </div>
