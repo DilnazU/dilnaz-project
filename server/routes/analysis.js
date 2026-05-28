@@ -33,26 +33,71 @@ const initClient = () => {
   return client;
 };
 
-// Анонимизация — убираем личные данные перед отправкой в API
-function anonymizeData(sheets) {
-  const phoneRegex = /(\+?[0-9]{10,13})/g;
-  const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
-  const iinRegex = /\b\d{12}\b/g; // ИИН Казахстан
+// Анонимизация — убираем личные данные перед отправкой в AI.
+// Подход:
+//   1. По имени колонки определяем чувствительные поля и маскируем целиком —
+//      это надёжнее, чем гадать по виду значения.
+//   2. Внутри текстовых значений ищем email, телефоны и ИИН по строгим шаблонам,
+//      чтобы случайно не маскировать артикулы, суммы и штрих-коды.
 
+// Регулярки. Email — стандартный. Телефон — с обязательным '+' или '8'/'7'
+// в начале, чтобы не сматчить произвольное число. ИИН — 12 цифр в отдельном
+// слове (граница \b с обеих сторон).
+const EMAIL_REGEX = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g;
+const PHONE_REGEX = /(?<![\d])(?:\+?7|8)[\s()-]?\(?\d{3}\)?[\s-]?\d{3}[\s-]?\d{2}[\s-]?\d{2}(?![\d])/g;
+const IIN_REGEX  = /(?<!\d)\d{12}(?!\d)/g;
+
+// Имена колонок, которые маскируем целиком (без оглядки на содержимое).
+// Если в Excel колонка называется "Телефон" — значение точно ПДн, что бы там ни было.
+const SENSITIVE_KEYS_RU = ['телефон', 'тел', 'мобильный', 'мобильник', 'phone', 'mobile', 'email', 'эл.почта', 'почта', 'e-mail', 'мейл', 'иин', 'iin', 'паспорт', 'passport', 'удостоверение', 'снилс', 'инн', 'фио', 'имя', 'name', 'фамилия', 'surname', 'отчество', 'адрес', 'address'];
+
+function getKeyMask(key) {
+  const k = String(key || '').trim().toLowerCase();
+  // "Безопасные" колонки — гарантированно НЕ ПДн, по тексту не чистим:
+  if (k.includes('штрих') || k.includes('barcode') || k.includes('артикул') || k === 'sku' || k.includes('код товара') || k.includes('product code')) return 'SKIP';
+  if (k.includes('телефон') || k.includes('phone') || k.includes('mobile') || k === 'тел') return '[ТЕЛЕФОН]';
+  if (k.includes('email') || k.includes('e-mail') || k.includes('почта') || k.includes('мейл')) return '[EMAIL]';
+  if (k.includes('иин') || k === 'iin') return '[ИИН]';
+  if (k.includes('паспорт') || k.includes('passport') || k.includes('удостоверение')) return '[ДОКУМЕНТ]';
+  if (k.includes('адрес') || k.includes('address')) return '[АДРЕС]';
+  if (k === 'фио' || k.includes('имя') || k === 'name' || k.includes('фамилия') || k === 'surname' || k.includes('отчество')) return '[ФИО]';
+  return null;
+}
+
+function anonymizeString(str) {
+  return str
+    .replace(EMAIL_REGEX, '[EMAIL]')
+    .replace(PHONE_REGEX, '[ТЕЛЕФОН]')
+    .replace(IIN_REGEX, '[ИИН]');
+}
+
+function anonymizeData(sheets) {
   const anonymized = {};
   for (const [sheetName, data] of Object.entries(sheets)) {
     anonymized[sheetName] = data.map(row => {
       const cleanRow = {};
       for (const [key, value] of Object.entries(row)) {
-        if (value === null || value === undefined) {
+        if (value === null || value === undefined || value === '') {
           cleanRow[key] = value;
           continue;
         }
-        let str = String(value);
-        str = str.replace(phoneRegex, '[ТЕЛЕФОН]');
-        str = str.replace(emailRegex, '[EMAIL]');
-        str = str.replace(iinRegex, '[ИИН]');
-        cleanRow[key] = isNaN(value) ? str : value;
+        // Шаг 1: если колонка известно-чувствительная — маскируем целиком.
+        // SKIP — это "безопасная" колонка (артикул, штрихкод), её не трогаем.
+        const mask = getKeyMask(key);
+        if (mask === 'SKIP') {
+          cleanRow[key] = value;
+          continue;
+        }
+        if (mask) {
+          cleanRow[key] = mask;
+          continue;
+        }
+        // Шаг 2: чистим текст по шаблонам, числа оставляем как есть
+        if (typeof value === 'number') {
+          cleanRow[key] = value;
+          continue;
+        }
+        cleanRow[key] = anonymizeString(String(value));
       }
       return cleanRow;
     });
