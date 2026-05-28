@@ -145,9 +145,21 @@ const getSystemPrompt = (category) => {
   return categoryPrompts[category] || categoryPrompts.marketing;
 };
 
+// Лимит длины одного сообщения от пользователя.
+// Защита от мусорных или вредоносных огромных payload, которые тратят токены AI.
+const MAX_MESSAGE_LENGTH = 4000;
+
 export const guestMessage = async (req, res) => {
   try {
     const { message, history = [], category = 'marketing' } = req.body;
+
+    if (!message || typeof message !== 'string' || message.trim().length === 0) {
+      return res.status(400).json({ message: 'Сообщение не должно быть пустым' });
+    }
+    if (message.length > MAX_MESSAGE_LENGTH) {
+      return res.status(400).json({ message: `Сообщение слишком длинное (максимум ${MAX_MESSAGE_LENGTH} символов)` });
+    }
+
     const apiClient = initClient();
 
     res.setHeader('Content-Type', 'text/event-stream');
@@ -194,6 +206,14 @@ export const sendMessage = async (req, res) => {
     }
 
     const { message, chatId, category } = req.body;
+
+    if (!message || typeof message !== 'string' || message.trim().length === 0) {
+      return res.status(400).json({ message: 'Сообщение не должно быть пустым' });
+    }
+    if (message.length > MAX_MESSAGE_LENGTH) {
+      return res.status(400).json({ message: `Сообщение слишком длинное (максимум ${MAX_MESSAGE_LENGTH} символов)` });
+    }
+
     const userId = req.user._id;
     const apiClient = initClient();
 

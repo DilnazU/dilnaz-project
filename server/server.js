@@ -52,7 +52,7 @@ app.use(cors({
   credentials: true,
 }));
 
-app.use(express.json());
+app.use(express.json({ limit: '100kb' }));
 app.use(cookieParser());
 
 mongoose.connect(process.env.MONGODB_URI)
