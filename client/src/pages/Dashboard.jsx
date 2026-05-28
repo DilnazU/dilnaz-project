@@ -93,7 +93,8 @@ export default function Dashboard() {
     const userMessage = { role: 'user', content: text };
     setMessages((prev) => [...prev, userMessage]);
     setLoading(true);
-    const assistantIndex = messages.length + 1;
+    // Добавляем пустой пузырь ассистента — он всегда ПОСЛЕДНИЙ в массиве.
+    // Дальше дописываем именно в последний элемент, не привязываясь к индексу.
     setMessages((prev) => [...prev, { role: 'assistant', content: '' }]);
     try {
       const token = localStorage.getItem('token');
@@ -121,9 +122,14 @@ export default function Dashboard() {
           try {
             const parsed = JSON.parse(line.replace('data: ', ''));
             if (parsed.text) {
-              setMessages((prev) => prev.map((msg, i) =>
-                i === assistantIndex ? { ...msg, content: msg.content + parsed.text } : msg
-              ));
+              setMessages((prev) => {
+                const updated = [...prev];
+                const last = updated.length - 1;
+                if (last >= 0 && updated[last].role === 'assistant') {
+                  updated[last] = { ...updated[last], content: updated[last].content + parsed.text };
+                }
+                return updated;
+              });
             }
             if (parsed.chatId) { setActiveChatId(parsed.chatId); fetchChats(); }
           } catch {}
@@ -131,9 +137,14 @@ export default function Dashboard() {
       }
     } catch (err) {
       if (err.name !== 'AbortError') {
-        setMessages((prev) => prev.map((msg, i) =>
-          i === assistantIndex ? { ...msg, content: 'Sorry, something went wrong.' } : msg
-        ));
+        setMessages((prev) => {
+          const updated = [...prev];
+          const last = updated.length - 1;
+          if (last >= 0 && updated[last].role === 'assistant') {
+            updated[last] = { ...updated[last], content: 'Sorry, something went wrong.' };
+          }
+          return updated;
+        });
       }
     } finally {
       readerRef.current = null;
@@ -232,7 +243,11 @@ export default function Dashboard() {
                 </svg>
               </div>
 
-              <h2 className="text-3xl font-bold mb-2 gradient-text">
+              <h2 className="text-3xl font-bold mb-2" style={{
+                background: `linear-gradient(135deg, ${accent}, ${accentBlue})`,
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}>
                 {t.dashboard.welcome}
               </h2>
               <p className="text-sm max-w-sm mx-auto" style={{ color: subtitleColor }}>
