@@ -35,24 +35,35 @@ const analysisLimiter = rateLimit({
   message: { error: 'Превышен лимит анализа. Попробуйте через 15 минут.' },
 });
 
+// Точно разрешённые адреса
 const allowedOrigins = [
   'http://localhost:5173',
   'https://dilnaz-project.vercel.app',
+  'https://msb-help.vercel.app',
   process.env.CLIENT_URL,
 ].filter(Boolean);
 
+// Разрешаем также preview-деплои Vercel: они имеют адреса вида
+// https://dilnaz-project-<hash>-dilnazus-projects.vercel.app
+const vercelPreviewRegex = /^https:\/\/dilnaz-project[-a-z0-9]*\.vercel\.app$/;
+const msbHelpPreviewRegex = /^https:\/\/msb-help[-a-z0-9]*\.vercel\.app$/;
+
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
+    if (!origin) return callback(null, true);
+    if (
+      allowedOrigins.includes(origin) ||
+      vercelPreviewRegex.test(origin) ||
+      msbHelpPreviewRegex.test(origin)
+    ) {
+      return callback(null, true);
     }
+    callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
 }));
 
-app.use(express.json({ limit: '100kb' }));
+app.use(express.json());
 app.use(cookieParser());
 
 mongoose.connect(process.env.MONGODB_URI)
