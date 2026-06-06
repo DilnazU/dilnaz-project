@@ -12,15 +12,24 @@ export default function Navbar({ onToggleSidebar }) {
   const navigate = useNavigate();
   const { dark } = useTheme();
   const [language, setLanguage] = useState(getLanguage());
+  const [langOpen, setLangOpen] = useState(false);
 
   useEffect(() => {
     const unsubscribe = subscribe((newLang) => setLanguage(newLang));
     return unsubscribe;
   }, []);
 
+  // Закрывать меню языка по клику вне него
+  useEffect(() => {
+    const close = () => setLangOpen(false);
+    if (langOpen) document.addEventListener('click', close);
+    return () => document.removeEventListener('click', close);
+  }, [langOpen]);
+
   const handleChangeLanguage = (lang) => {
     updateLanguage(lang);
     setLanguage(lang);
+    setLangOpen(false);
   };
 
   const t = translations[language];
@@ -43,8 +52,9 @@ export default function Navbar({ onToggleSidebar }) {
         <ThemeToggle />
 
         {/* Language selector */}
-        <div className="relative group">
-          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-bold transition-all"
+        <div className="relative" onClick={(e) => e.stopPropagation()}>
+          <button onClick={() => setLangOpen((o) => !o)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-bold transition-all"
             style={{
               background: dark ? 'rgba(0,255,135,0.08)' : 'rgba(5,150,105,0.1)',
               border: dark ? '1px solid rgba(0,255,135,0.15)' : '1px solid rgba(5,150,105,0.2)',
@@ -55,24 +65,26 @@ export default function Navbar({ onToggleSidebar }) {
               <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
             </svg>
           </button>
-          <div className="absolute right-0 mt-1 w-36 rounded-xl overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50"
-            style={{
-              background: dark ? '#020f1a' : '#ffffff',
-              border: dark ? '1px solid rgba(0,255,135,0.15)' : '1px solid rgba(5,150,105,0.2)',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
-            }}>
-            {Object.entries({ en: 'English', ru: 'Русский', kk: 'Қазақша' }).map(([lang, label]) => (
-              <button key={lang} onClick={() => handleChangeLanguage(lang)}
-                className="w-full text-left px-4 py-2.5 text-sm transition-all hover:bg-white/5"
-                style={{
-                  color: language === lang ? (dark ? '#00ff87' : '#059669') : (dark ? 'rgba(148,163,184,0.6)' : 'rgba(51,65,85,0.7)'),
-                  borderBottom: dark ? '1px solid rgba(0,255,135,0.06)' : '1px solid rgba(5,150,105,0.08)',
-                  fontWeight: language === lang ? '600' : '400',
-                }}>
-                {lang.toUpperCase()} {label}
-              </button>
-            ))}
-          </div>
+          {langOpen && (
+            <div className="absolute right-0 mt-1 w-36 rounded-xl overflow-hidden z-50"
+              style={{
+                background: dark ? '#020f1a' : '#ffffff',
+                border: dark ? '1px solid rgba(0,255,135,0.15)' : '1px solid rgba(5,150,105,0.2)',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+              }}>
+              {Object.entries({ en: 'English', ru: 'Русский', kk: 'Қазақша' }).map(([lang, label]) => (
+                <button key={lang} onClick={() => handleChangeLanguage(lang)}
+                  className="w-full text-left px-4 py-2.5 text-sm transition-all hover:bg-white/5"
+                  style={{
+                    color: language === lang ? (dark ? '#00ff87' : '#059669') : (dark ? 'rgba(148,163,184,0.6)' : 'rgba(51,65,85,0.7)'),
+                    borderBottom: dark ? '1px solid rgba(0,255,135,0.06)' : '1px solid rgba(5,150,105,0.08)',
+                    fontWeight: language === lang ? '600' : '400',
+                  }}>
+                  {lang.toUpperCase()} {label}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* User */}
