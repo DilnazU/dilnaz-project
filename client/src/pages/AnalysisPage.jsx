@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Building2, Users, AlertCircle, Target, Upload, BarChart3, TrendingUp, AlertTriangle, CheckCircle, Calendar, ArrowLeft, Download, Shield, ExternalLink, Globe } from 'lucide-react';
+import { Building2, Users, AlertCircle, Target, Upload, BarChart3, TrendingUp, AlertTriangle, CheckCircle, Calendar, ArrowLeft, Download, Shield, ExternalLink, Globe, Wallet } from 'lucide-react';
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
 import { pdf, Document, Page, Text, View, StyleSheet, Font, Image } from '@react-pdf/renderer';
@@ -48,6 +48,8 @@ const t = {
     q3: 'Основная проблема', q3Placeholder: 'С какой проблемой вы столкнулись?',
     q4: 'Цель на 3-6 месяцев', q4Placeholder: 'Чего вы хотите достичь?',
     q5: 'Загрузите файл (Excel/CSV)',
+    qInvest: 'Вложения за период (необязательно)',
+    qInvestPlaceholder: 'Сколько потратили: закуп, аренда, реклама, зарплаты (тенге). Нужно для расчёта ROI',
     summary: 'Резюме', analytics: 'Аналитика', problems: 'Проблемы',
     recommendations: 'Рекомендации', forecast: 'Прогноз',
     downloadPDF: 'Скачать PDF', downloading: 'Создаём PDF...',
@@ -59,8 +61,8 @@ const t = {
       agree: 'Я согласен(на) с условиями обработки данных',
       policy: 'Политика Anthropic',
     },
-    metrics: { revenue: 'Общий доход', growth: 'Рост', prob: 'Вероятность роста' },
-    charts: { revenue: 'Динамика доходов', forecast: 'Прогноз на 3 недели' },
+    metrics: { revenue: 'Общий доход', growth: 'Рост', prob: 'Надёжность прогноза' },
+    charts: { revenue: 'Динамика доходов', forecast: 'Прогноз' },
   },
   en: {
     title: 'Business Analysis', back: 'Back', analyze: 'Analyze', analyzing: 'Analyzing...',
@@ -69,6 +71,8 @@ const t = {
     q3: 'Main problem', q3Placeholder: 'What challenge are you facing?',
     q4: 'Goal for 3-6 months', q4Placeholder: 'What do you want to achieve?',
     q5: 'Upload file (Excel/CSV)',
+    qInvest: 'Investment for the period (optional)',
+    qInvestPlaceholder: 'How much you spent: goods, rent, ads, salaries (KZT). Needed to calculate ROI',
     summary: 'Summary', analytics: 'Analytics', problems: 'Problems',
     recommendations: 'Recommendations', forecast: 'Forecast',
     downloadPDF: 'Download PDF', downloading: 'Creating PDF...',
@@ -80,8 +84,8 @@ const t = {
       agree: 'I agree to the data processing terms',
       policy: 'Anthropic Policy',
     },
-    metrics: { revenue: 'Total Revenue', growth: 'Growth', prob: 'Growth Probability' },
-    charts: { revenue: 'Revenue Dynamics', forecast: '3-Week Forecast' },
+    metrics: { revenue: 'Total Revenue', growth: 'Growth', prob: 'Forecast reliability' },
+    charts: { revenue: 'Revenue Dynamics', forecast: 'Forecast' },
   },
   kk: {
     title: 'Бизнес талдауы', back: 'Артқа', analyze: 'Талдау', analyzing: 'Талдануда...',
@@ -90,6 +94,8 @@ const t = {
     q3: 'Негізгі мәселе', q3Placeholder: 'Қандай мәселеге тап болдыңыз?',
     q4: '3-6 айға мақсат', q4Placeholder: 'Не қол жеткізгіңіз келеді?',
     q5: 'Файл жүктеңіз (Excel/CSV)',
+    qInvest: 'Кезеңдегі салымдар (міндетті емес)',
+    qInvestPlaceholder: 'Қанша жұмсадыңыз: тауар, жалдау, жарнама, жалақы (теңге). ROI есептеу үшін қажет',
     summary: 'Қорытынды', analytics: 'Аналитика', problems: 'Мәселелер',
     recommendations: 'Ұсыныстар', forecast: 'Болжам',
     downloadPDF: 'PDF жүктеу', downloading: 'PDF жасалуда...',
@@ -101,8 +107,8 @@ const t = {
       agree: 'Мен деректерді өңдеу шарттарымен келісемін',
       policy: 'Anthropic саясаты',
     },
-    metrics: { revenue: 'Жалпы табыс', growth: 'Өсім', prob: 'Өсу мүмкіндігі' },
-    charts: { revenue: 'Табыс динамикасы', forecast: '3 аптаға болжам' },
+    metrics: { revenue: 'Жалпы табыс', growth: 'Өсім', prob: 'Болжам сенімділігі' },
+    charts: { revenue: 'Табыс динамикасы', forecast: 'Болжам' },
   },
 };
 
@@ -166,7 +172,7 @@ export default function AnalysisPage() {
   const [lang, setLang] = useState(getLanguage());
   const [langDropdown, setLangDropdown] = useState(false);
   const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState({ business: '', audience: '', problem: '', goal: '' });
+  const [formData, setFormData] = useState({ business: '', audience: '', problem: '', goal: '', investment: '' });
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [downloading, setDownloading] = useState(false);
@@ -223,6 +229,7 @@ export default function AnalysisPage() {
       fd.append('audience', formData.audience);
       fd.append('problem', formData.problem);
       fd.append('goal', formData.goal);
+      fd.append('investment', formData.investment || '');
       fd.append('file', file);
       const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/api/analysis`, fd, {
         headers: { 'Content-Type': 'multipart/form-data' },
@@ -413,11 +420,29 @@ export default function AnalysisPage() {
                 </div>
               ))}
 
+              {/* Investment (optional, for ROI) */}
+              <div className="rounded-2xl p-5" style={{ background: cardBg, border: `1px solid ${cardBorder}` }}>
+                <label className="flex items-center gap-2 text-base font-semibold mb-3" style={{ color: textColor }}>
+                  <span className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
+                    style={{ background: `${accent}26`, border: `1px solid ${accent}4d`, color: accent }}>5</span>
+                  <Wallet size={16} style={{ color: accent }} />
+                  {tr.qInvest}
+                </label>
+                <input type="number" min="0" value={formData.investment}
+                  onChange={e => setFormData(prev => ({ ...prev, investment: e.target.value }))}
+                  placeholder={tr.qInvestPlaceholder}
+                  className="w-full px-4 py-3 rounded-xl text-base outline-none transition-all"
+                  style={{ background: inputBg, border: `1px solid ${inputBorder}`, color: textColor, caretColor: accent }}
+                  onFocus={e => { e.target.style.border = `1px solid ${accent}59`; e.target.style.boxShadow = `0 0 15px ${accent}0f`; }}
+                  onBlur={e => { e.target.style.border = `1px solid ${inputBorder}`; e.target.style.boxShadow = 'none'; }}
+                />
+              </div>
+
               {/* File upload */}
               <div className="rounded-2xl p-5" style={{ background: cardBg, border: `1px solid ${cardBorder}` }}>
                 <label className="flex items-center gap-2 text-base font-semibold mb-4" style={{ color: textColor }}>
                   <span className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
-                    style={{ background: `${accent}26`, border: `1px solid ${accent}4d`, color: accent }}>5</span>
+                    style={{ background: `${accent}26`, border: `1px solid ${accent}4d`, color: accent }}>6</span>
                   <Upload size={16} style={{ color: accent }} />
                   {tr.q5}
                 </label>
@@ -460,9 +485,15 @@ export default function AnalysisPage() {
               <div>
                 <h1 className="text-3xl font-bold mb-2" style={{ color: dark ? 'white' : '#0f172a' }}>{tr.results}</h1>
                 <p className="text-base" style={{ color: textMuted }}>{formData.business}</p>
+                {results?.charts?.period && (
+                  <p className="text-sm mt-1" style={{ color: textMuted }}>
+                    {lang === 'kk' ? 'Деректер кезеңі: ' : lang === 'en' ? 'Data period: ' : 'Период данных: '}
+                    {results.charts.period.label} · {results.charts.period.points} {lang === 'kk' ? 'нүкте' : lang === 'en' ? 'points' : 'точек'}
+                  </p>
+                )}
               </div>
               <div className="flex gap-3">
-                <button onClick={() => { setStep(1); setResults(null); setFormData({ business: '', audience: '', problem: '', goal: '' }); setFile(null); setAgreed(false); }}
+                <button onClick={() => { setStep(1); setResults(null); setFormData({ business: '', audience: '', problem: '', goal: '', investment: '' }); setFile(null); setAgreed(false); }}
                   className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all hover:bg-white/5"
                   style={{ color: accent, border: `1px solid ${accent}26` }}>
                   <ArrowLeft size={15} /> {tr.newAnalysis}
@@ -501,7 +532,7 @@ export default function AnalysisPage() {
               {results?.charts?.forecastChart && (
                 <div className="p-6 rounded-2xl" style={{ background: chartBg2, border: `1px solid ${chartBorder2}` }}>
                   <h3 className="font-semibold mb-4 flex items-center gap-2" style={{ color: accentBlue }}>
-                    <Calendar size={16} /> {tr.charts.forecast}
+                    <Calendar size={16} /> {results?.charts?.period ? `${tr.charts.forecast} · +3 ${results.charts.period.cadence}` : tr.charts.forecast}
                   </h3>
                   <Line ref={forecastChartRef} data={results.charts.forecastChart} options={{ responsive: true, maintainAspectRatio: true, plugins: { legend: { labels: { color: dark ? '#94a3b8' : '#475569' } } }, scales: { x: { ticks: { color: dark ? '#64748b' : '#94a3b8' }, grid: { color: dark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.05)' } }, y: { ticks: { color: dark ? '#64748b' : '#94a3b8' }, grid: { color: dark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.05)' } } } }} />
                 </div>
