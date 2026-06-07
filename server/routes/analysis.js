@@ -10,7 +10,6 @@ const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 }, // максимум 10MB
   fileFilter: (req, file, cb) => {
-    // Только Excel и CSV файлы
     const allowed = [
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       'application/vnd.ms-excel',
@@ -33,37 +32,75 @@ const initClient = () => {
   return client;
 };
 
-// Анонимизация — убираем личные данные перед отправкой в API
-function anonymizeData(sheets) {
-  const phoneRegex = /(\+?[0-9]{10,13})/g;
-  const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
-  const iinRegex = /\b\d{12}\b/g; // ИИН Казахстан
+// ===================== ПЕРСОНАЛЬНЫЕ ДАННЫЕ =====================
 
+// Заголовки колонок, которые считаем персональными → выбрасываем целиком
+const PII_HEADER = /(клиент|клиен|клієнт|покупател|customer|контакт|contact|фио|имя|фамил|отчеств|name|почт|e-?mail|email|телефон|phone|мобильн|моб\.|иин|iin|жсн|адрес|address|паспорт|passport)/i;
+
+const EMAIL_RE = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
+const IIN_RE = /\b\d{12}\b/g;
+const PHONE_RE = /\+?\d[\d\s\-()]{8,13}\d/g;
+
+function digitsOnly(s) {
+  return String(s).replace(/\D/g, '');
+}
+
+// Похоже ли значение на ПД (email / телефон / ИИН)
+function looksLikePII(value) {
+  if (value === null || value === undefined || value instanceof Date) return false;
+  const s = String(value).trim();
+  if (/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(s)) return true;
+  const d = digitsOnly(s);
+  if (d.length >= 10 && d.length <= 13 && /^[\d\s\-()+]+$/.test(s)) return true;
+  return false;
+}
+
+// Маскировка одной ячейки — и для строк, и для чисел
+function maskCell(value) {
+  if (value === null || value === undefined || value instanceof Date) return value;
+  if (typeof value === 'number') {
+    const d = String(value);
+    if (/^\d{12}$/.test(d)) return '[ИИН]';
+    if (/^\d{10,13}$/.test(d)) return '[ТЕЛЕФОН]';
+    return value; // обычное число — оставляем числом
+  }
+  return String(value)
+    .replace(EMAIL_RE, '[EMAIL]')
+    .replace(IIN_RE, '[ИИН]')
+    .replace(PHONE_RE, '[ТЕЛЕФОН]');
+}
+
+// Анонимизация: выбрасываем колонки с ПД (по названию ИЛИ по содержимому),
+// в оставшихся маскируем точечные ПД. Даты не трогаем.
+function anonymizeData(sheets) {
   const anonymized = {};
   for (const [sheetName, data] of Object.entries(sheets)) {
+    if (!data.length) { anonymized[sheetName] = []; continue; }
+    const cols = Object.keys(data[0]);
+
+    // Определяем колонки с персональными данными
+    const piiCols = new Set();
+    for (const col of cols) {
+      if (PII_HEADER.test(String(col))) { piiCols.add(col); continue; }
+      const vals = data.map(r => r[col]).filter(v => v !== null && v !== undefined && v !== '');
+      if (vals.length && vals.filter(looksLikePII).length / vals.length >= 0.6) {
+        piiCols.add(col);
+      }
+    }
+
     anonymized[sheetName] = data.map(row => {
       const cleanRow = {};
       for (const [key, value] of Object.entries(row)) {
-        if (value === null || value === undefined) {
-          cleanRow[key] = value;
-          continue;
-        }
-        // Даты не трогаем — они нужны для анализа периода
-        if (value instanceof Date) {
-          cleanRow[key] = value;
-          continue;
-        }
-        let str = String(value);
-        str = str.replace(phoneRegex, '[ТЕЛЕФОН]');
-        str = str.replace(emailRegex, '[EMAIL]');
-        str = str.replace(iinRegex, '[ИИН]');
-        cleanRow[key] = isNaN(value) ? str : value;
+        if (piiCols.has(key)) continue; // колонка с ПД — в API не уходит вообще
+        cleanRow[key] = maskCell(value);
       }
       return cleanRow;
     });
   }
   return anonymized;
 }
+
+// ===================== РАЗБОР ДАННЫХ =====================
 
 function extractAllData(workbook) {
   const sheets = {};
@@ -83,12 +120,11 @@ function findNumericColumns(data) {
   });
 }
 
-// --- Разбор дат: поддержка Date, Excel-серийных чисел и строк (в т.ч. дд.мм.гггг) ---
+// Разбор дат: Date, Excel-серийные числа и строки (в т.ч. дд.мм.гггг)
 function parseDateValue(v) {
   if (v === null || v === undefined || v === '') return null;
   if (v instanceof Date) return isNaN(v.getTime()) ? null : v;
   if (typeof v === 'number') {
-    // Excel-серийная дата (эпоха 1899-12-30)
     if (v > 59 && v < 80000) {
       const d = new Date(Math.round((v - 25569) * 86400 * 1000));
       return isNaN(d.getTime()) ? null : d;
@@ -98,7 +134,6 @@ function parseDateValue(v) {
   const s = String(v).trim();
   const native = new Date(s);
   if (!isNaN(native.getTime())) return native;
-  // дд.мм.гггг / дд/мм/гггг / дд-мм-гггг
   const m = s.match(/^(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{2,4})$/);
   if (m) {
     let [, dd, mm, yy] = m;
@@ -116,7 +151,6 @@ function median(arr) {
   return s.length % 2 ? s[mid] : (s[mid - 1] + s[mid]) / 2;
 }
 
-// Определяем шаг данных (день / неделя / месяц / квартал / год) по медиане промежутков
 function detectCadence(dates) {
   if (dates.length < 2) return { unit: 'период', days: 1 };
   const gaps = [];
@@ -131,7 +165,6 @@ function detectCadence(dates) {
   return { unit: 'год', days: 365 };
 }
 
-// Линейный тренд (метод наименьших квадратов) + R² + прогноз на N шагов вперёд
 function linearTrend(values, steps) {
   const n = values.length;
   let sx = 0, sy = 0, sxx = 0, sxy = 0;
@@ -141,7 +174,6 @@ function linearTrend(values, steps) {
   const denom = (n * sxx - sx * sx) || 1;
   const slope = (n * sxy - sx * sy) / denom;
   const intercept = (sy - slope * sx) / n;
-
   const meanY = sy / n;
   let ssTot = 0, ssRes = 0;
   for (let i = 0; i < n; i++) {
@@ -150,19 +182,11 @@ function linearTrend(values, steps) {
     ssRes += (values[i] - pred) ** 2;
   }
   const r2 = ssTot > 0 ? Math.max(0, 1 - ssRes / ssTot) : 0;
-
   const forecast = [];
   for (let k = 1; k <= steps; k++) {
     forecast.push(Math.max(0, slope * (n - 1 + k) + intercept));
   }
-  return {
-    slope,
-    intercept,
-    r2,
-    forecast,
-    trendStart: intercept,
-    trendEnd: slope * (n - 1) + intercept,
-  };
+  return { slope, intercept, r2, forecast, trendStart: intercept, trendEnd: slope * (n - 1) + intercept };
 }
 
 const fmtDate = d =>
@@ -179,7 +203,6 @@ function generateChartData(sheets, investment) {
     const numCols = findNumericColumns(data);
 
     if (dateCol && numCols.length > 0) {
-      // Сначала ищем колонку дохода по названию, иначе берём с максимальной суммой
       const revLike = numCols.find(c =>
         /доход|выручка|revenue|sales|продаж|оборот|сумма|amount|total/i.test(String(c))
       );
@@ -215,21 +238,15 @@ function generateChartData(sheets, investment) {
   const cadence = detectCadence(dates);
 
   const { r2, forecast, trendStart, trendEnd } = linearTrend(values, 3);
-
-  // Рост — по тренду от начала к концу периода (устойчивее, чем "первая vs последняя точка")
   const growth = trendStart > 0 ? ((trendEnd - trendStart) / trendStart) * 100 : 0;
 
-  // Честный ROI: считаем только если пользователь указал вложения/расходы за период
   const inv = parseFloat(investment);
   let roi = null;
   if (!isNaN(inv) && inv > 0) {
     roi = ((totalRevenue - inv) / inv) * 100;
   }
 
-  // Надёжность прогноза = насколько данные ложатся на тренд (R²),
-  // с поправкой на малое число точек (2-3 точки не дают настоящей уверенности)
   const reliability = Math.round(r2 * 100 * Math.min(1, n / 4));
-
   const periodLabel = `${fmtDate(dates[0])} — ${fmtDate(dates[n - 1])}`;
   const forecastLabels = ['Сейчас', `+1 ${cadence.unit}`, `+2 ${cadence.unit}`, `+3 ${cadence.unit}`];
 
@@ -265,6 +282,7 @@ function generateChartData(sheets, investment) {
   };
 }
 
+// Сводка для модели: ТОЛЬКО схема и агрегаты, без сырых строк
 function buildDataSummary(sheets) {
   const lines = [];
   for (const [sheetName, data] of Object.entries(sheets)) {
@@ -275,6 +293,7 @@ function buildDataSummary(sheets) {
     const numCols = findNumericColumns(data);
     for (const col of numCols) {
       const vals = data.map(r => parseFloat(r[col])).filter(v => !isNaN(v));
+      if (!vals.length) continue;
       const sum = vals.reduce((s, v) => s + v, 0);
       const min = Math.min(...vals);
       const max = Math.max(...vals);
@@ -282,13 +301,12 @@ function buildDataSummary(sheets) {
       lines.push(`  ${col}: сумма=${sum.toFixed(0)}, среднее=${avg.toFixed(0)}, мин=${min.toFixed(0)}, макс=${max.toFixed(0)}`);
     }
 
-    const preview = data.slice(0, 3).map(row =>
-      Object.entries(row)
-        .filter(([, v]) => v !== null && v !== '')
-        .map(([k, v]) => `${k}: ${v instanceof Date ? fmtDate(v) : v}`)
-        .join(' | ')
-    ).join('\n');
-    lines.push(`Примеры данных:\n${preview}`);
+    // Текстовые колонки: только сам факт и число уникальных значений, БЕЗ значений
+    const textCols = cols.filter(c => !numCols.includes(c));
+    for (const col of textCols) {
+      const uniq = new Set(data.map(r => r[col]).filter(v => v !== null && v !== '')).size;
+      lines.push(`  ${col}: текстовая колонка (значения не передаются), уникальных ≈ ${uniq}`);
+    }
   }
   return lines.join('\n');
 }
@@ -302,15 +320,11 @@ router.post('/', upload.single('file'), async (req, res) => {
     }
 
     const apiClient = initClient();
-    // cellDates: true — чтобы даты приходили как Date, а не как Excel-числа
     const workbook = xlsx.read(req.file.buffer, { type: 'buffer', cellDates: true });
 
-    // Явно очищаем буфер после чтения
     req.file.buffer = null;
 
     const rawSheets = extractAllData(workbook);
-
-    // Анонимизируем данные перед отправкой в API
     const sheets = anonymizeData(rawSheets);
 
     const chartData = generateChartData(sheets, investment);
@@ -344,10 +358,10 @@ ${periodLine}
 - Изменение по тренду: ${m.growth}%
 - ${roiLine}
 
-РЕАЛЬНЫЕ ДАННЫЕ ИЗ EXCEL:
+АГРЕГИРОВАННАЯ СВОДКА ИЗ ФАЙЛА (без сырых строк, персональные данные удалены):
 ${dataSummary}
 
-ВАЖНО: Используй конкретные числа из данных выше. Не давай общих советов — анализируй именно эти цифры. Все выводы привязывай к указанному периоду данных.
+ВАЖНО: Используй конкретные числа из сводки выше. Не давай общих советов — анализируй именно эти цифры. Все выводы привязывай к указанному периоду данных.
 
 Верни ТОЛЬКО JSON без форматирования markdown:
 {
@@ -378,7 +392,6 @@ ${dataSummary}
     res.json(results);
 
   } catch (error) {
-    // Не логируем детали данных — безопасность
     console.error('Analysis error:', error.message);
     res.status(500).json({ error: 'Ошибка анализа. Попробуйте ещё раз.' });
   }
